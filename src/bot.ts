@@ -501,6 +501,18 @@ export class DiscordBot {
         if (!msg) {
             return;
         }
+
+        // Decode HTML entities before sending the message.
+        // Borrowed from matrix-org/matrix-appservice-irc/src/irc/formatting.ts
+        const escapeChars: [RegExp, string][] = [
+            [/&gt;/g, '>'], [/&lt;/g, '<'], [/&quot;/g, '"'], [/&amp;/g, '&'],
+            [/&apos;/g, "'"], [/&#x3e;/g, '>'], [/&#x3c;/g, '<'],
+            [/&#x22;/g, '"'], [/&#x26;/g, '&'], [/&#x27;/g, "'"]
+        ];
+        escapeChars.forEach(function(escapeSet) {
+            msg = msg.replace(escapeSet[0], escapeSet[1]);
+        });
+
         this.channelLock.set(channel.id);
         const res = await channel.send(msg);
         await this.StoreMessagesSent(res, channel, event);
